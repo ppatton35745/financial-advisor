@@ -78,13 +78,15 @@ const finAdvisor = Object.create({}, {
             this.portfolio.push(transaction);
         }
     },
+    
+    
     worth: {
         enumerable: false,
         writable: false,
         
         value: function () {
+            
             this.sortPortfolio();
-            console.log(this.portfolio);
             
             const portTotals = [];
             let i = 0;
