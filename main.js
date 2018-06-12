@@ -33,21 +33,34 @@ const finAdvisor = Object.create({}, {
     portfolio: {
         enumerable: false,
         writable: true,
-        transactions: []
+        value: []
+    },
+    sortPortfolio: {
+        value: function () {
+            this.portfolio.sort(function (a, b) {
+                if (a.ticker > b.ticker) {
+                    return 1;
+                } else if (a.ticker < b.ticker) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+        }
     },
     purchase: {
         enumerable: false,
         writable: false,
         value: function (ticker, qty, price) {
 
-            const transaction = Object.create({}, {
+            const transaction = {
                 type: "buy",
                 ticker: ticker,
                 qty: qty,
                 price: price
-            })
+            }
 
-            this.portfolio.transactions.push(transaction);
+            this.portfolio.push(transaction);
         }
     },
     sell: {
@@ -55,22 +68,61 @@ const finAdvisor = Object.create({}, {
         writable: false,
         value: function (ticker, qty, price) {
 
-            const transaction = Object.create({}, {
+            const transaction = {
                 type: "sell",
                 ticker: ticker,
                 qty: qty,
                 price: price
-            })
+            }
 
-            this.portfolio.transactions.push(transaction);
+            this.portfolio.push(transaction);
         }
     },
     worth: {
         enumerable: false,
         writable: false,
+        
         value: function () {
+            this.sortPortfolio();
+            console.log(this.portfolio);
             
-            console.log(this.portfolio.transactions)
+            const portTotals = [];
+            let i = 0;
+            let j = 0;
+            
+            this.portfolio.forEach(transaction => {  
+                const tranTot = {
+                    ticker: transaction.ticker,
+                    qty: transaction.qty,
+                    price: transaction.price
+                } 
+                
+                if (transaction.type === "sell") {
+                    tranTot.qty = (tranTot.qty * -1)
+                }
+
+                if (j === 0) {
+                    portTotals.push(tranTot);
+                    j++;
+                } else if (portTotals[i].ticker !== tranTot.ticker) {
+                    portTotals.push(tranTot);
+                    i++;
+                } else {
+                    portTotals[i].qty += tranTot.qty;
+                    portTotals[i].price = tranTot.price;
+                }
+            });
+
+            finalValues = portTotals.map(t => {
+                const stock = {
+                    ticker: t.ticker,
+                    value: (Number.parseFloat(t.qty) * Number.parseFloat(t.price))
+                }
+
+                return stock;
+            });
+            
+            return finalValues;
         }
     }
 
@@ -81,4 +133,4 @@ finAdvisor.purchase("TA", 30, 80.00);
 finAdvisor.purchase("JS", 40, 150.00);
 finAdvisor.sell("AAPL",20,120.00);
 finAdvisor.purchase("TA", 200, 30.00);
-finAdvisor.worth();
+console.log(finAdvisor.worth());
